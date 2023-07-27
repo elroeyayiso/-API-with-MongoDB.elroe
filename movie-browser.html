@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Browser</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', function(){
+            const DOMAIN_NAME = 'http://localhost:3000';
+            const ROUTE_ACTIONS = [
+                ['List all movies', 'GET', '/all', (res) => renderTitles(res)],
+                ['Find movie titles containing "dog"', 'GET', '/find?contains=dog', (res) => renderTitles(res)],
+                ['Find movie titles starting with "the"', 'GET', '/find?startsWith=the', (res) => renderTitles(res)],
+                ['Remove all movies', 'DELETE', '/all', (res) => ''],
+                ['List all movies', 'GET', '/all', (res) => renderTitles(res)],
+            ];
+
+            const RESULTS_BOX = document.getElementById('results-box');
+
+            function renderTitles(res) { console.log(res); return (Array.isArray(res) && res.length > 0)? `<ul><li>${ res.join('</li><li>') }</li></ul>` : 'No Results'; }
+
+            function composeSuccessResult(actionNumber, routeAction, response) {
+                const [ACTION_LABEL, ROUTE_METHOD, ROUTE_ENDPOINT, RENDER_SUCCESS] = routeAction;
+                const actionResult = document.createElement('div');
+                actionResult.className = "action-result";
+                actionResult.innerHTML = `
+                    <h3>Action ${actionNumber}: ${ACTION_LABEL}</h3>
+                    <p>Request: ${ROUTE_METHOD} '${ROUTE_ENDPOINT}'</p>
+                    <p>Response: <em>SUCCESS</em></p>
+                    <div>${RENDER_SUCCESS(response)}</div>
+                `;
+
+                RESULTS_BOX.append(actionResult);
+            }
+
+            function composeFailureResult(actionNumber, routeAction, error) {
+                const [ACTION_LABEL, ROUTE_METHOD, ROUTE_ENDPOINT, RENDER_SUCCESS] = routeAction;
+
+                const actionResult = document.createElement('div');
+                actionResult.className = "action-result";
+                actionResult.innerHTML = `
+                    <h3>Action ${actionNumber}: ${ACTION_LABEL}</h3>
+                    <p>Request: ${ROUTE_METHOD} '${ROUTE_ENDPOINT}'</p>
+                    <p>Response: <em>FAILURE</em></p>
+                    <div>${error.name}: ${error.message}</div>
+                `;
+
+                RESULTS_BOX.append(actionResult);
+            }
+
+            async function runMovieBrowser() {
+                RESULTS_BOX.textContent = '';
+                for (let i = 0, iEnd = ROUTE_ACTIONS.length; i < iEnd; i++) {
+                    try {
+                        const [ACTION_LABEL, ROUTE_METHOD, ROUTE_ENDPOINT, RENDER_SUCCESS] = ROUTE_ACTIONS[i];
+                        const RESPONSE = await fetch(DOMAIN_NAME + ROUTE_ENDPOINT, {
+                            method: ROUTE_METHOD,
+                            mode: 'cors',
+                        });
+
+                        if (!RESPONSE.ok) {
+                            throw new Error(`Response Status: ${RESPONSE.status}`);
+                        }
+
+                        const CONTENT_TYPE = RESPONSE.headers.get("content-type");
+                        if (CONTENT_TYPE?.indexOf("application/json") !== -1) {
+                            composeSuccessResult(i + 1, ROUTE_ACTIONS[i], await RESPONSE.json());
+                        }
+                        else {
+                            composeSuccessResult(i + 1, ROUTE_ACTIONS[i], await RESPONSE.text());
+                        }
+                    }
+                    catch (e) {
+                        composeFailureResult(i + 1, ROUTE_ACTIONS[i], e);
+                    }
+                }
+            }
+
+            runMovieBrowser();
+        });
+    </script>
+</head>
+<body>
+    <main>
+        <div id="results-box"></div>
+    </main>
+</body>
+</html>

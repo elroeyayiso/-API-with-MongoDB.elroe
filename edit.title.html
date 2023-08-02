@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Movie Title</title>
+
+    
+        <!---->
+        <label>Exisiting Movie Title: <input type = "text" id="title" /></label>
+        <label>Movie's New Title: <input type = "text" id="newTitle" /></label>
+        <button id = "editButton">Edit Movie Title</button>
+
+        <script>
+
+        const inputTitle = document.getElementById("title");
+        const inputNewTitle = document.querySelector("#newTitle");
+        const buttonEdit = document.querySelector("editButton");
+
+        console.log(document.getElementById(title).value);
+        buttonEdit.addEventListener('click' function(){ fetch(domaiName + editRoute,{
+            method:'PUT',
+            body: JSON.stringify({
+                title: ''
+                newTitle: ''
+            })
+
+
+        })
+
+        })
+
+
+
+
+        </script>
+        </head>
+        <body>
+
+
+
+
+        
+      
+
+
+
+
+
+
+
+
+
+
+
+    </body>
+    </html>
